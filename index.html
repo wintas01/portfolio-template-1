@@ -371,12 +371,13 @@ footer{border-top:1px solid var(--line);padding:2.5rem 5vw;display:flex;justify-
     <div class="label" style="justify-content:center">Contact</div>
     <a href="#contact" class="big-cta" id="bigCta" data-hover>LET'S TALK</a>
     <p class="contact-sub reveal">Have a project in mind? Send a message and I'll reply within 24 hours. Or email <strong style="color:var(--ink)">hello@yourname.com</strong></p>
-    <form id="form" class="reveal">
+    <!-- CONTACT FORM: paste your Formspree link into data-endpoint, e.g. data-endpoint="https://formspree.io/f/abcdwxyz" -->
+    <form id="form" class="reveal" data-endpoint="">
       <div class="row2">
-        <div class="field"><input id="n" placeholder=" " required><label for="n">Your name</label></div>
-        <div class="field"><input id="e" type="email" placeholder=" " required><label for="e">Email</label></div>
+        <div class="field"><input id="n" name="name" placeholder=" " required><label for="n">Your name</label></div>
+        <div class="field"><input id="e" name="email" type="email" placeholder=" " required><label for="e">Email</label></div>
       </div>
-      <div class="field"><textarea id="m" rows="5" placeholder=" " required></textarea><label for="m">Tell me about your project</label></div>
+      <div class="field"><textarea id="m" name="message" rows="5" placeholder=" " required></textarea><label for="m">Tell me about your project</label></div>
       <button class="btn primary magnetic" data-hover style="justify-self:center"><span>Send message →</span></button>
       <p class="form-note" id="note"></p>
     </form>
@@ -469,6 +470,7 @@ function draw(){
 }
 
 /* ---------- SCRAMBLE TEXT ---------- */
+// EDIT: the job titles that scramble in the hero
 const roles=['Product Designer','Web Developer','Creative Technologist','Brand Strategist'];
 const scr=$('#scramble'), glyphs='!<>-_\\/[]{}—=+*^?#01';
 let ri=0;
@@ -574,10 +576,16 @@ function frame(){
 requestAnimationFrame(frame);
 
 /* ---------- FORM ---------- */
-$('#form').addEventListener('submit',e=>{
+$('#form').addEventListener('submit',async e=>{
   e.preventDefault();
-  $('#note').textContent='✓ Demo form — connect it to your email service (e.g. Formspree) before going live.';
-  e.target.reset();
+  const f=e.target,note=$('#note'),url=f.dataset.endpoint;
+  if(!url){note.textContent='✓ Demo form — add your Formspree link to data-endpoint (see README).';f.reset();return}
+  note.textContent='Sending…';
+  try{
+    const r=await fetch(url,{method:'POST',body:new FormData(f),headers:{Accept:'application/json'}});
+    note.textContent=r.ok?'✓ Thanks! Your message has been sent.':'Something went wrong — please email me instead.';
+    if(r.ok)f.reset();
+  }catch(err){note.textContent='Something went wrong — please email me instead.'}
 });
 
 /* ---------- CLOCK ---------- */
